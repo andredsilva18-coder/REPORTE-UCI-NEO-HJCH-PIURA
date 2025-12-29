@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte Diario UCI Neonatal</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
+        .container { max-width: 1100px; background: white; padding: 30px; margin: auto; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { color: #0056b3; text-align: center; border-bottom: 3px solid #0056b3; padding-bottom: 10px; margin-bottom: 20px; text-transform: uppercase; font-size: 22px; }
+        h2 { background: #e9ecef; padding: 8px; font-size: 16px; border-left: 5px solid #0056b3; margin-top: 25px; }
+        
+        .grid-header { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
+        th, td { border: 1px solid #dee2e6; padding: 10px; text-align: left; vertical-align: top; }
+        th { background-color: #0056b3; color: white; font-weight: 600; font-size: 13px; }
+        
+        input, textarea, select { width: 92%; border: 1px solid #ced4da; padding: 6px; border-radius: 4px; font-size: 13px; }
+        textarea { resize: vertical; height: 50px; }
+        
+        .button-group { display: flex; gap: 10px; justify-content: center; margin-top: 30px; }
+        .btn { padding: 12px 25px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-save { background: #28a745; color: white; }
+        .btn-print { background: #17a2b8; color: white; }
+        .btn-clear { background: #dc3545; color: white; }
+        .btn:hover { opacity: 0.8; }
+
+        @media print {
+            .button-group, .btn-clear { display: none !important; }
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; border: none; max-width: 100%; }
+            input, textarea { border: none; background: transparent; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Reporte Diario UCI Neonatal [cite: 1]</h1>
+    
+    <div class="grid-header">
+        <div>
+            <label><b>Fecha:</b></label><br>
+            <input type="date" id="fechaReporte">
+        </div>
+        <div>
+            <label><b>Turno:</b></label><br>
+            <select id="turno">
+                <option value="Mañana">Mañana [cite: 1]</option>
+                <option value="Tarde">Tarde [cite: 1]</option>
+                <option value="Noche">Noche [cite: 1]</option>
+            </select>
+        </div>
+        <div>
+            <label><b>Responsable:</b></label><br>
+            <input type="text" id="responsable" placeholder="Nombre del Médico">
+        </div>
+    </div>
+
+    <h2>RESUMEN CUANTITATIVO [cite: 1]</h2>
+    <table>
+        <tr>
+            <td><b>UCI Neo:</b> <input type="text" id="totalUci" style="width:40px" placeholder="0"> / 6 camas [cite: 1]</td>
+            <td><b>VM Invasiva:</b> <input type="number" id="vmInvasiva" style="width:50px"> [cite: 1]</td>
+            <td><b>CPAP:</b> <input type="number" id="cpap" style="width:50px"> [cite: 1]</td>
+            <td><b>Vent. Disponibles:</b> <input type="text" id="ventDisp" style="width:40px"> / 6 [cite: 1]</td>
+        </tr>
+    </table>
+
+    <h2>PACIENTES ACTUALES UCI [cite: 3, 4]</h2>
+    <table id="tablaUci">
+        <thead>
+            <tr>
+                <th style="width:5%">Cama </th>
+                <th style="width:20%">Identificación (EG/Peso/Edad) </th>
+                <th style="width:15%">Dx Principal </th>
+                <th style="width:25%">Evolución (SV/VM/Nutr.) </th>
+                <th style="width:15%">Plan </th>
+                <th style="width:15%">Pendientes </th>
+            </tr>
+        </thead>
+        <tbody id="bodyUci"></tbody>
+    </table>
+
+    <div class="button-group">
+        <button class="btn btn-save" onclick="guardarDatos()">💾 Guardar Datos</button>
+        <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir / PDF</button>
+        <button class="btn btn-clear" onclick="limpiarEvolucion()">🧹 Nuevo Turno</button>
+    </div>
+</div>
+
+<script>
+    const numCamas = 6;
+
+    window.onload = function() {
+        // Establecer fecha de hoy
+        document.getElementById('fechaReporte').value = new Date().toISOString().split('T')[0];
+        cargarTabla();
+        cargarMetadatos();
+    };
+
+    function cargarTabla() {
+        const body = document.getElementById('bodyUci');
+        const datosPrevios = JSON.parse(localStorage.getItem('datosUci')) || {};
+        body.innerHTML = "";
+
+        for (let i = 1; i <= numCamas; i++) {
+            let fila = datosPrevios[i] || { id: "", dx: "", evo: "", plan: "", pend: "" };
+            body.innerHTML += `
+                <tr>
+                    <td style="text-align:center"><b>${i}</b></td>
+                    <td><input type="text" id="id_${i}" value="${fila.id}" placeholder="...sem / ...g / ...d"></td>
+                    <td><input type="text" id="dx_${i}" value="${fila.dx}"></td>
+                    <td><textarea id="evo_${i}">${fila.evo}</textarea></td>
+                    <td><input type="text" id="plan_${i}" value="${fila.plan}"></textarea></td>
+                    <td><input type="text" id="pend_${i}" value="${fila.pend}"></td>
+                </tr>
+            `;
+        }
+    }
+
+    function guardarDatos() {
+        let datosUci = {};
+        for (let i = 1; i <= numCamas; i++) {
+            datosUci[i] = {
+                id: document.getElementById(`id_${i}`).value,
+                dx: document.getElementById(`dx_${i}`).value,
+                evo: document.getElementById(`evo_${i}`).value,
+                plan: document.getElementById(`plan_${i}`).value,
+                pend: document.getElementById(`pend_${i}`).value
+            };
+        }
+        localStorage.setItem('datosUci', JSON.stringify(datosUci));
+
+        const metadatos = {
+            totalUci: document.getElementById('totalUci').value,
+            vmInvasiva: document.getElementById('vmInvasiva').value,
+            cpap: document.getElementById('cpap').value,
+            ventDisp: document.getElementById('ventDisp').value
+        };
+        localStorage.setItem('metaUci', JSON.stringify(metadatos));
+        alert("✅ Datos guardados para el siguiente turno.");
+    }
+
+    function cargarMetadatos() {
+        const meta = JSON.parse(localStorage.getItem('metaUci'));
+        if (meta) {
+            document.getElementById('totalUci').value = meta.totalUci || "";
+            document.getElementById('vmInvasiva').value = meta.vmInvasiva || "";
+            document.getElementById('cpap').value = meta.cpap || "";
+            document.getElementById('ventDisp').value = meta.ventDisp || "";
+        }
+    }
+
+    function limpiarEvolucion() {
+        if(confirm("¿Seguro? Esto borrará solo la 'Evolución' y 'Pendientes' para iniciar un nuevo turno, pero mantendrá los datos del paciente (EG/Peso/Dx).")) {
+            for (let i = 1; i <= numCamas; i++) {
+                document.getElementById(`evo_${i}`).value = "";
+                document.getElementById(`pend_${i}`).value = "";
+            }
+            document.getElementById('responsable').value = "";
+            alert("🧹 Evoluciones limpias. ¡Listo para el nuevo turno!");
+        }
+    }
+</script>
+
+</body>
+</html>
