@@ -2,89 +2,122 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Reporte Diario UCI Neonatal Hospital José Cayetano Heredia</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte Diario UCI Neonatal - HJCH</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
-        .container { max-width: 1100px; background: white; padding: 30px; margin: auto; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h1 { color: #0056b3; text-align: center; border-bottom: 3px solid #0056b3; padding-bottom: 10px; margin-bottom: 20px; text-transform: uppercase; font-size: 22px; }
-        h2 { background: #e9ecef; padding: 8px; font-size: 16px; border-left: 5px solid #0056b3; margin-top: 25px; }
+        :root { --primary: #0056b3; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 10px; color: #333; }
+        .container { max-width: 1200px; background: white; padding: 20px; margin: auto; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         
-        .grid-header { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px; }
+        h1 { color: var(--primary); text-align: center; font-size: 1.4rem; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; }
+        h2 { background: #eee; padding: 8px; font-size: 1rem; border-left: 4px solid var(--primary); margin-top: 20px; }
+
+        .grid-header { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px; background: #f9f9f9; padding: 15px; border-radius: 8px; }
+        .input-group { display: flex; flex-direction: column; }
+        label { font-weight: bold; font-size: 0.85rem; margin-bottom: 4px; }
+
+        /* Contenedor para que en celular se pueda deslizar la tabla */
+        .table-container { overflow-x: auto; margin-top: 10px; border: 1px solid #ccc; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; font-size: 0.85rem; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; vertical-align: top; }
+        th { background: var(--primary); color: white; text-transform: uppercase; font-size: 0.75rem; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
-        th, td { border: 1px solid #dee2e6; padding: 10px; text-align: left; vertical-align: top; }
-        th { background-color: #0056b3; color: white; font-weight: 600; font-size: 13px; }
-        
-        input, textarea, select { width: 92%; border: 1px solid #ced4da; padding: 6px; border-radius: 4px; font-size: 13px; }
-        textarea { resize: vertical; height: 50px; }
-        
-        .button-group { display: flex; gap: 10px; justify-content: center; margin-top: 30px; }
-        .btn { padding: 12px 25px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-save { background: #28a745; color: white; }
-        .btn-print { background: #17a2b8; color: white; }
-        .btn-clear { background: #dc3545; color: white; }
+        input, textarea, select { width: 95%; border: 1px solid #ccc; padding: 6px; border-radius: 4px; font-size: 0.85rem; }
+        textarea { height: 70px; resize: none; }
+
+        /* Filas especiales (Ingresos y Espera) */
+        .fila-especial { background: #fff9c4 !important; font-weight: bold; }
+        .fila-especial input { background: transparent; border: none; font-weight: bold; width: 98%; }
+
+        .btn-group { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 25px; }
+        .btn { padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; transition: 0.3s; }
+        .btn-save { background: #28a745; }
+        .btn-print { background: #17a2b8; }
+        .btn-clear { background: #6c757d; }
         .btn:hover { opacity: 0.8; }
 
+        /* AJUSTES PARA IMPRESIÓN */
         @media print {
-            .button-group, .btn-clear { display: none !important; }
+            .btn-group, .btn-clear { display: none !important; }
             body { background: white; padding: 0; }
-            .container { box-shadow: none; border: none; max-width: 100%; }
-            input, textarea { border: none; background: transparent; }
+            .container { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; }
+            th { background: #f0f0f0 !important; color: black !important; border: 1px solid #000; }
+            td { border: 1px solid #000; }
+            input, textarea { border: none !important; background: transparent !important; padding: 0; }
+            .table-container { overflow: visible; }
+            @page { margin: 1cm; size: landscape; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Reporte Diario UCI Neonatal </h1>
-    
+    <h1>Reporte Diario UCI Neonatal - Hospital JCH</h1>
+
     <div class="grid-header">
-        <div>
-            <label><b>Fecha:</b></label><br>
+        <div class="input-group">
+            <label>Fecha:</label>
             <input type="date" id="fechaReporte">
         </div>
-        <div>
-            <label><b>Turno:</b></label><br>
+        <div class="input-group">
+            <label>Turno:</label>
             <select id="turno">
-                <option value="Diurno">Diurno </option>
-                <option value="Noche">Noche </option>
+                <option value="Diurno">Mañana/Tarde</option>
+                <option value="Noche">Noche</option>
             </select>
         </div>
-        <div>
-            <label><b>Responsable:</b></label><br>
-            <input type="text" id="responsable" placeholder="Nombre del Médico">
+        <div class="input-group">
+            <label>Médico Responsable:</label>
+            <input type="text" id="responsable" placeholder="Dr./Dra. ...">
         </div>
     </div>
 
-    <h2>RESUMEN CUANTITATIVO </h2>
-    <table>
-        <tr>
-            <td><b>UCI Neo:</b> <input type="text" id="totalUci" style="width:40px" placeholder="0"> / 6 camas </td>
-            <td><b>VM Invasiva:</b> <input type="number" id="vmInvasiva" style="width:50px"> </td>
-            <td><b>CPAP:</b> <input type="number" id="cpap" style="width:50px"> </td>
-            <td><b>Vent. Disponibles:</b> <input type="text" id="ventDisp" style="width:40px"> / 6 </td>
-        </tr>
-    </table>
-
-    <h2>PACIENTES ACTUALES UCI </h2>
-    <table id="tablaUci">
-        <thead>
+    <h2>Resumen Cuantitativo</h2>
+    <div class="table-container">
+        <table>
             <tr>
-                <th style="width:5%">Cama </th>
-                <th style="width:20%">Identificación (EG/Peso/Edad) </th>
-                <th style="width:15%">Dx Principal </th>
-                <th style="width:25%">Evolución (SV/VM/Nutr.) </th>
-                <th style="width:15%">Plan </th>
-                <th style="width:15%">Pendientes </th>
+                <td><b>Pacientes:</b> <input type="number" id="totalUci" style="width:50px"> / 6</td>
+                <td><b>VM Invasiva:</b> <input type="number" id="vmInvasiva" style="width:50px"></td>
+                <td><b>CPAP:</b> <input type="number" id="cpap" style="width:50px"></td>
+                <td><b>Vent. Libres:</b> <input type="number" id="ventDisp" style="width:50px"> / 6</td>
             </tr>
-        </thead>
-        <tbody id="bodyUci"></tbody>
-    </table>
+        </table>
+    </div>
 
-    <div class="button-group">
-        <button class="btn btn-save" onclick="guardarDatos()">💾 Guardar Datos</button>
-        <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir / PDF</button>
-        <button class="btn btn-clear" onclick="limpiarEvolucion()">🧹 Nuevo Turno</button>
+    <h2>Pacientes Actuales UCI</h2>
+    <div class="table-container">
+        <table id="tablaUci">
+            <thead>
+                <tr>
+                    <th style="width:40px">Cama</th>
+                    <th style="width:250px">Identificación y Edad</th>
+                    <th style="width:180px">Dx Principal</th>
+                    <th>Evolución (SV/VM/Nutr)</th>
+                    <th style="width:180px">Pendientes</th>
+                </tr>
+            </thead>
+            <tbody id="bodyUci">
+                <tr class="fila-especial">
+                    <td style="text-align:center">---</td>
+                    <td><b>INGRESOS DEL TURNO:</b></td>
+                    <td colspan="3"><input type="text" id="ingresosTxt" placeholder="Escriba aquí si hubo ingresos durante el turno..."></td>
+                </tr>
+                
+                </tbody>
+            <tfoot>
+                <tr class="fila-especial">
+                    <td style="text-align:center">---</td>
+                    <td><b>OBSERVACIONES:</b></td>
+                    <td colspan="3"><input type="text" id="observaciones" placeholder="(Paciente en espera de hospitalización)"></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-save" onclick="guardarDatos()">💾 Guardar Todo</button>
+        <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir PDF</button>
+        <button class="btn btn-clear" onclick="limpiarTurno()">🧹 Nuevo Turno (Limpiar Evol.)</button>
     </div>
 </div>
 
@@ -92,79 +125,152 @@
     const numCamas = 6;
 
     window.onload = function() {
-        // Establecer fecha de hoy
+        // Poner fecha de hoy por defecto
         document.getElementById('fechaReporte').value = new Date().toISOString().split('T')[0];
-        cargarTabla();
-        cargarMetadatos();
+        
+        generarCamas();
+        cargarDatosGuardados();
     };
 
-    function cargarTabla() {
+    function generarCamas() {
         const body = document.getElementById('bodyUci');
-        const datosPrevios = JSON.parse(localStorage.getItem('datosUci')) || {};
-        body.innerHTML = "";
-
+        // Insertamos las camas después de la fila de ingresos
         for (let i = 1; i <= numCamas; i++) {
-            let fila = datosPrevios[i] || { id: "", dx: "", evo: "", plan: "", pend: "" };
-            body.innerHTML += `
-                <tr>
-                    <td style="text-align:center"><b>${i}</b></td>
-                    <td><input type="text" id="id_${i}" value="${fila.id}" placeholder="...sem / ...g / ...d"></td>
-                    <td><input type="text" id="dx_${i}" value="${fila.dx}"></td>
-                    <td><textarea id="evo_${i}">${fila.evo}</textarea></td>
-                    <td><input type="text" id="plan_${i}" value="${fila.plan}"></textarea></td>
-                    <td><input type="text" id="pend_${i}" value="${fila.pend}"></td>
-                </tr>
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td style="text-align:center; vertical-align:middle;"><b>${i}</b></td>
+                <td>
+                    <label>Nombre:</label>
+                    <input type="text" id="nombre_${i}" placeholder="Apellidos y Nombres" style="margin-bottom:8px">
+                    <div style="display:flex; gap:5px;">
+                        <div style="flex:1">
+                            <label style="font-size:10px">F. Nacimiento:</label>
+                            <input type="date" id="fnac_${i}" onchange="calcularEdad(${i})">
+                        </div>
+                        <div style="flex:1">
+                            <label style="font-size:10px">EG Nac/Corr:</label>
+                            <input type="text" id="eg_${i}" placeholder="30s / 32s">
+                        </div>
+                    </div>
+                    <div style="margin-top:8px; color: #d32f2f; font-weight:bold">
+                        Edad Actual: <span id="edadTxt_${i}">-</span>
+                    </div>
+                </td>
+                <td><textarea id="dx_${i}" placeholder="Diagnósticos..."></textarea></td>
+                <td><textarea id="evo_${i}" placeholder="Relato de evolución..."></textarea></td>
+                <td><textarea id="pend_${i}" placeholder="Exámenes, interconsultas..."></textarea></td>
             `;
+            body.appendChild(row);
         }
+    }
+
+    function calcularEdad(id) {
+        const fechaNac = document.getElementById(`fnac_${id}`).value;
+        if (!fechaNac) return;
+        
+        const nac = new Date(fechaNac);
+        const hoy = new Date();
+        
+        // Diferencia en milisegundos
+        const diff = hoy - nac;
+        const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+        
+        let resultado = "";
+        if (dias < 0) {
+            resultado = "Fecha inválida";
+        } else if (dias < 30) {
+            resultado = dias + " día(s)";
+        } else {
+            const meses = Math.floor(dias / 30.44); // promedio de días al mes
+            const diasRestantes = Math.floor(dias % 30.44);
+            resultado = meses + " mes(es) y " + diasRestantes + " día(s)";
+        }
+        
+        document.getElementById(`edadTxt_${id}`).innerText = resultado;
     }
 
     function guardarDatos() {
-        let datosUci = {};
+        let uciData = { pacientes: [], meta: {}, extra: {} };
+
         for (let i = 1; i <= numCamas; i++) {
-            datosUci[i] = {
-                id: document.getElementById(`id_${i}`).value,
+            uciData.pacientes.push({
+                nombre: document.getElementById(`nombre_${i}`).value,
+                fnac: document.getElementById(`fnac_${i}`).value,
+                edad: document.getElementById(`edadTxt_${i}`).innerText,
+                eg: document.getElementById(`eg_${i}`).value,
                 dx: document.getElementById(`dx_${i}`).value,
                 evo: document.getElementById(`evo_${i}`).value,
-                plan: document.getElementById(`plan_${i}`).value,
                 pend: document.getElementById(`pend_${i}`).value
-            };
+            });
         }
-        localStorage.setItem('datosUci', JSON.stringify(datosUci));
 
-        const metadatos = {
-            totalUci: document.getElementById('totalUci').value,
-            vmInvasiva: document.getElementById('vmInvasiva').value,
+        uciData.meta = {
+            total: document.getElementById('totalUci').value,
+            vm: document.getElementById('vmInvasiva').value,
             cpap: document.getElementById('cpap').value,
-            ventDisp: document.getElementById('ventDisp').value
+            vent: document.getElementById('ventDisp').value,
+            responsable: document.getElementById('responsable').value,
+            turno: document.getElementById('turno').value
         };
-        localStorage.setItem('metaUci', JSON.stringify(metadatos));
-        alert("✅ Datos guardados para el siguiente turno.");
+
+        uciData.extra = {
+            ingresos: document.getElementById('ingresosTxt').value,
+            obs: document.getElementById('observaciones').value
+        };
+
+        localStorage.setItem('datosUciNeonatal', JSON.stringify(uciData));
+        alert("✅ Datos guardados correctamente en este navegador.");
     }
 
-    function cargarMetadatos() {
-        const meta = JSON.parse(localStorage.getItem('metaUci'));
-        if (meta) {
-            document.getElementById('totalUci').value = meta.totalUci || "";
-            document.getElementById('vmInvasiva').value = meta.vmInvasiva || "";
-            document.getElementById('cpap').value = meta.cpap || "";
-            document.getElementById('ventDisp').value = meta.ventDisp || "";
-        }
+    function cargarDatosGuardados() {
+        const guardado = localStorage.getItem('datosUciNeonatal');
+        if (!guardado) return;
+        
+        const data = JSON.parse(guardado);
+
+        // Cargar Pacientes
+        data.pacientes.forEach((p, index) => {
+            const i = index + 1;
+            if(document.getElementById(`nombre_${i}`)) {
+                document.getElementById(`nombre_${i}`).value = p.nombre || "";
+                document.getElementById(`fnac_${i}`).value = p.fnac || "";
+                document.getElementById(`edadTxt_${i}`).innerText = p.edad || "-";
+                document.getElementById(`eg_${i}`).value = p.eg || "";
+                document.getElementById(`dx_${i}`).value = p.dx || "";
+                document.getElementById(`evo_${i}`).value = p.evo || "";
+                document.getElementById(`pend_${i}`).value = p.pend || "";
+            }
+        });
+
+        // Cargar Resumen y Encabezado
+        document.getElementById('totalUci').value = data.meta.total || "";
+        document.getElementById('vmInvasiva').value = data.meta.vm || "";
+        document.getElementById('cpap').value = data.meta.cpap || "";
+        document.getElementById('ventDisp').value = data.meta.vent || "";
+        document.getElementById('responsable').value = data.meta.responsable || "";
+        document.getElementById('turno').value = data.meta.turno || "Diurno";
+        
+        // Cargar Filas Especiales
+        document.getElementById('ingresosTxt').value = data.extra.ingresos || "";
+        document.getElementById('observaciones').value = data.extra.obs || "";
     }
 
-    function limpiarEvolucion() {
-        if(confirm("¿Seguro? Esto borrará solo la 'Evolución' y 'Pendientes' para iniciar un nuevo turno, pero mantendrá los datos del paciente (EG/Peso/Dx).")) {
+    function limpiarTurno() {
+        if(confirm("¿Estás seguro de iniciar un nuevo turno? Se borrarán las 'Evoluciones' y 'Pendientes', pero se mantendrán los nombres, fechas de nacimiento y diagnósticos.")) {
             for (let i = 1; i <= numCamas; i++) {
                 document.getElementById(`evo_${i}`).value = "";
                 document.getElementById(`pend_${i}`).value = "";
             }
-            document.getElementById('responsable').value = "";
-            alert("🧹 Evoluciones limpias. ¡Listo para el nuevo turno!");
+            // Limpiar también ingresos para el nuevo turno
+            document.getElementById('ingresosTxt').value = "";
+            alert("🧹 Evoluciones y pendientes limpiados.");
         }
     }
 </script>
 
 </body>
 </html>
+
 
 
 
